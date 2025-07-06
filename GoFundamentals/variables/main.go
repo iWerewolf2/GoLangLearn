@@ -14,6 +14,6 @@ func main() {
 	fmt.Println("How old are you?")
 	fmt.Scanf("%d\n", &age)
 
-	fmt.Printf("Привет, %s, твой возраст - %d\n", name, age)
+	fmt.Printf("Hi, %s, your age - %d\n", name, age)
 
 }
