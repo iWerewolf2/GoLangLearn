@@ -20,7 +20,7 @@ func handleRequest() {
 
 	http.HandleFunc("/", home_page)
 	http.HandleFunc("/contacts/", contacts_page)
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":3030", nil)
 }
 
 func main() {
