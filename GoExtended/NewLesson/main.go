@@ -5,7 +5,9 @@ import (
 	"net/http"
 )
 
-func home_page(w http.ResponseWriter, r *http.Request) {
+func home_page(page http.ResponseWriter, r *http.Request) {
+
+	fmt.Fprintf(page, "My http page")
 
 }
 
