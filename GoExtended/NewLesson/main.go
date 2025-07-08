@@ -5,17 +5,26 @@ import (
 	"net/http"
 )
 
-func home_page(page http.ResponseWriter, r *http.Request) {
+func home_page(w http.ResponseWriter, r *http.Request) {
 
-	fmt.Fprintf(page, "My http page")
+	fmt.Fprintf(w, "My first page")
 
+}
+
+func contacts_page(w http.ResponseWriter, r *http.Request) {
+
+	fmt.Fprintf(w, "Second Page")
+}
+
+func handleRequest() {
+
+	http.HandleFunc("/", home_page)
+	http.HandleFunc("/contacts/", contacts_page)
+	http.ListenAndServe(":8080", nil)
 }
 
 func main() {
 
-	http.HandleFunc("/", home_page)
-	http.ListenAndServe(":8080", nil)
-
-	fmt.Println()
+	handleRequest()
 
 }
