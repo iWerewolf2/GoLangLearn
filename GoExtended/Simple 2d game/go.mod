@@ -1,4 +1,4 @@
-module ebiten
+module snake-game
 
 go 1.24.4
 
