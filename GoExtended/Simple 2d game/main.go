@@ -5,7 +5,8 @@ import (
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/vector" // Import for drawing shapes
+	"github.com/hajimehoshi/ebiten/v2/vector"
+	// Import for drawing shapes
 )
 
 // Direction represents the direction of the snake.
@@ -88,15 +89,13 @@ func (g *Game) Update() error {
 	return nil
 }
 
-// Draw draws the game world.
 func (g *Game) Draw(screen *ebiten.Image) {
-	// Clear the screen (optional, but good practice)
-	screen.Fill(color.Black) // Fill background with black
+	screen.Fill(color.Black)
 
-	// Draw the snake (for now, just a square representing the head)
-	// We'll use vector.DrawRect for simplicity.
-	// Arguments: image, x, y, width, height, color
-	vector.DrawRect(screen, float32(g.snakeX), float32(g.snakeY), 10, 10, color.RGBA{0x00, 0xFF, 0x00, 0xFF}, false) // Green square
+	// Draw the snake head (green square)
+	// Arguments: image, x, y, width, height, color, antialias
+	vector.DrawFilledRect(screen, float32(g.snakeX), float32(g.snakeY), 10, 10, color.RGBA{0x00, 0xFF, 0x00, 0xFF}, false)
+	//                                  ^^^^^^^ changed from DrawRect
 }
 
 // Layout defines the size of the game window.
