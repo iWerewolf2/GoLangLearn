@@ -1,3 +1,3 @@
 This is file for myGolang Learning progress
 
-Create an API base on internet guides
+Create an API based on internet guides
