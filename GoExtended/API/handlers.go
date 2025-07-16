@@ -4,77 +4,63 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 
 	"github.com/gorilla/mux"
 )
 
+// Index responds with a welcome message.
 func Index(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Welcome!\n")
+	fmt.Fprintln(w, "Welcome!")
 }
 
+// TodoIndex responds with all todos in JSON.
 func TodoIndex(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(todos); err != nil {
-		panic(err)
-	}
+	writeJSON(w, http.StatusOK, todos)
 }
 
+// TodoShow responds with a specific todo by ID or 404 if not found.
 func TodoShow(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	var todoId int
-	var err error
-	if todoId, err = strconv.Atoi(vars["todoId"]); err != nil {
-		panic(err)
-	}
-	todo := RepoFindTodo(todoId)
-	if todo.Id > 0 {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(todo); err != nil {
-			panic(err)
-		}
+	todoID, err := strconv.Atoi(vars["todoId"])
+	if err != nil {
+		writeJSON(w, http.StatusBadRequest, jsonErr{Code: http.StatusBadRequest, Text: "Invalid ID"})
 		return
 	}
 
-	// If we didn't find it, 404
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusNotFound)
-	if err := json.NewEncoder(w).Encode(jsonErr{Code: http.StatusNotFound, Text: "Not Found"}); err != nil {
-		panic(err)
+	todo := RepoFindTodo(todoID)
+	if todo.Id > 0 {
+		writeJSON(w, http.StatusOK, todo)
+	} else {
+		writeJSON(w, http.StatusNotFound, jsonErr{Code: http.StatusNotFound, Text: "Not Found"})
 	}
-
 }
 
-/*
-Test with this curl command:
-
-curl -H "Content-Type: application/json" -d '{"name":"New Todo"}' http://localhost:8080/todos
-*/
+// TodoCreate creates a new todo from the request body.
 func TodoCreate(w http.ResponseWriter, r *http.Request) {
 	var todo Todo
-	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
+	body, err := io.ReadAll(io.LimitReader(r.Body, 1048576))
 	if err != nil {
-		panic(err)
+		writeJSON(w, http.StatusInternalServerError, jsonErr{Code: http.StatusInternalServerError, Text: "Failed to read request"})
+		return
 	}
-	if err := r.Body.Close(); err != nil {
-		panic(err)
-	}
+	defer r.Body.Close()
+
 	if err := json.Unmarshal(body, &todo); err != nil {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(422) // unprocessable entity
-		if err := json.NewEncoder(w).Encode(err); err != nil {
-			panic(err)
-		}
+		writeJSON(w, http.StatusUnprocessableEntity, jsonErr{Code: http.StatusUnprocessableEntity, Text: "Invalid JSON"})
+		return
 	}
 
-	t := RepoCreateTodo(todo)
+	createdTodo := RepoCreateTodo(todo)
+	writeJSON(w, http.StatusCreated, createdTodo)
+}
+
+// writeJSON is a helper to write JSON responses.
+func writeJSON(w http.ResponseWriter, status int, v interface{}) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusCreated)
-	if err := json.NewEncoder(w).Encode(t); err != nil {
-		panic(err)
+	w.WriteHeader(status)
+	if err := json.NewEncoder(w).Encode(v); err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 }
